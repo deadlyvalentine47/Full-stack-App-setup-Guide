@@ -1,0 +1,87 @@
+# Changing dataDir for Kafka and Zookeeper on Windows
+
+This guide explains how to change the `dataDir` for Zookeeper and the equivalent `log.dirs` for Kafka on a Windows system to customize where data and logs are stored for persistence.
+
+## Why Change dataDir?
+- The default `dataDir` for Zookeeper (`/tmp/zookeeper`) and `log.dirs` for Kafka (`/tmp/kafka-logs`) are temporary and may be cleared on reboot.
+- Customizing these paths ensures data persistence and better organization for your Task Manager project or other applications.
+
+## Prerequisites
+- Apache Kafka installed (e.g., extracted to `C:\kafka`).
+- JDK 17 or later installed and `JAVA_HOME` set.
+- Text editor (e.g., Notepad, Notepad++).
+- Administrator privileges for creating directories.
+
+## 1. Change Zookeeper dataDir
+1. **Locate the Config File**
+   - Navigate to your Kafka installation directory, e.g., `C:\kafka`.
+   - Find the Zookeeper configuration file: `config\zookeeper.properties`.
+2. **Create a New Directory**
+   - Decide on a new location, e.g., `C:\kafka\data\zookeeper`.
+   - Open File Explorer, go to `C:\kafka`, and create the folder:
+     - Right-click > New > Folder > Name it "data".
+     - Inside "data", create another folder named "zookeeper".
+     - Full path: `C:\kafka\data\zookeeper`.
+   - Alternatively, open Command Prompt (Run as Administrator) and run:
+     mkdir C:\kafka\data\zookeeper
+3. **Edit the Config File**
+   - Open `config\zookeeper.properties` in a text editor (e.g., Notepad).
+   - Find the line: `dataDir=/tmp/zookeeper`.
+   - Replace it with the Windows path, using forward slashes or escaped backslashes:
+     dataDir=C:/kafka/data/zookeeper
+     - OR: dataDir=C:\\kafka\\data\\zookeeper
+   - Note: Kafka and Zookeeper accept forward slashes (`/`) on Windows for compatibility.
+4. **Save the File**
+   - Save and close `zookeeper.properties`.
+5. **Why?**
+   - This directory stores Zookeeper’s snapshot and transaction logs, ensuring data isn’t lost in a temp folder.
+
+## 2. Change Kafka log.dirs
+1. **Locate the Config File**
+   - In the Kafka directory (e.g., `C:\kafka`), find: `config\server.properties`.
+2. **Create a New Directory**
+   - Decide on a new location, e.g., `C:\kafka\data\kafka-logs`.
+   - In File Explorer:
+     - Go to `C:\kafka`, create a "data" folder if not already present.
+     - Inside "data", create a folder named "kafka-logs".
+     - Full path: `C:\kafka\data\kafka-logs`.
+   - Or via Command Prompt (Run as Administrator):
+     mkdir C:\kafka\data\kafka-logs
+3. **Edit the Config File**
+   - Open `config\server.properties` in a text editor.
+   - Find the line: `log.dirs=/tmp/kafka-logs`.
+   - Replace it with:
+     log.dirs=C:/kafka/data/kafka-logs
+     - OR: log.dirs=C:\\kafka\\data\\kafka-logs
+   - Note: `log.dirs` is Kafka’s equivalent to `dataDir`, storing message logs and topic data.
+4. **Save the File**
+   - Save and close `server.properties`.
+
+## 3. Apply Changes
+1. **Stop Running Services**
+   - If Zookeeper or Kafka is running, stop them:
+   - In their respective terminals, press `Ctrl+C` to shut down.
+2. **Start Zookeeper**
+   - Open Command Prompt, navigate to Kafka directory:
+     cd C:\kafka
+   - Run:
+     bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+   - Check logs in the terminal; Zookeeper should use `C:\kafka\data\zookeeper`.
+3. **Start Kafka**
+   - Open a new Command Prompt, navigate to Kafka directory:
+     cd C:\kafka
+   - Run:
+     bin\windows\kafka-server-start.bat config\server.properties
+   - Check logs; Kafka should use `C:\kafka\data\kafka-logs`.
+4. **Verify**
+   - Create a test topic:
+     bin\windows\kafka-topics.bat --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   - Check `C:\kafka\data\zookeeper` and `C:\kafka\data\kafka-logs` in File Explorer.
+   - You should see new files/folders (e.g., snapshot files in zookeeper, topic partitions in kafka-logs).
+
+## 4. Notes
+- **Permissions:** If access is denied, run Command Prompt as Administrator or grant your user write access to `C:\kafka\data` via File Explorer (Right-click > Properties > Security > Edit).
+- **Path Choice:** Use any path (e.g., `D:\kafka-data\zookeeper`), but ensure it exists and is writable.
+- **Slashes:** Both forward slashes (`/`) and escaped backslashes (`\\`) work; forward slashes are simpler.
+- **Persistence:** These new directories prevent data loss on reboot, unlike `/tmp`.
+- **Troubleshooting:** Check logs in the terminal or `C:\kafka\logs` if issues arise (e.g., port conflicts on 2181 or 9092).

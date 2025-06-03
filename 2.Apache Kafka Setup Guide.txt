@@ -1,0 +1,128 @@
+# Apache Kafka Setup Guide
+
+This guide provides step-by-step instructions to install and set up Apache Kafka, a distributed streaming platform, on your system. Kafka relies on Zookeeper for coordination, so we’ll install both. This setup is suitable for local development for the Task Manager project or similar applications.
+
+## Why Kafka?
+
+Kafka enables asynchronous messaging, event streaming, and data integration between services (e.g., sending task updates from a backend to other systems). It’s scalable, fault-tolerant, and handles high-throughput data.
+
+## Prerequisites
+
+- Java Development Kit (JDK) 17 or later installed (Kafka runs on Java).
+- System: Windows, macOS, or Linux.
+- At least 4GB RAM and 5GB free disk space.
+- Terminal access (Command Prompt for Windows, Terminal for macOS/Linux).
+
+## 1. Download Apache Kafka
+
+1. Visit the official Apache Kafka download page: https://kafka.apache.org/downloads
+2. Choose the latest stable release (e.g., kafka_2.13-3.7.x).
+   - Note: The "2.13" refers to the Scala version Kafka is built with; 3.7.x is the Kafka version.
+3. Download the binary .tgz file (e.g., kafka_2.13-3.7.x.tgz).
+   - For Windows, macOS, or Linux, the process starts with this tarball.
+
+## 2. Extract Kafka
+
+1. Move the downloaded file to a desired location:
+   - Windows: e.g., C:\\kafka
+   - macOS/Linux: e.g., /usr/local/kafka
+2. Extract the file:
+   - Windows: Use a tool like 7-Zip or WinRAR to unzip kafka_2.13-3.7.x.tgz, then extract the resulting .tar file to C:\\kafka.
+   - macOS/Linux: Open a terminal and run: tar -xzf kafka_2.13-3.7.x.tgz mv kafka_2.13-3.7.x /usr/local/kafka
+3. Result: You’ll have a directory (e.g., /usr/local/kafka or C:\\kafka) containing Kafka and Zookeeper files, including bin/, config/, and logs/.
+
+## 3. Configure Zookeeper
+
+Why: Zookeeper manages Kafka’s cluster coordination, tracking brokers and topics.
+
+1. Navigate to the Kafka directory:
+   - Windows: cd C:\\kafka
+   - macOS/Linux: cd /usr/local/kafka
+2. Locate the Zookeeper config file: config/zookeeper.properties
+3. Default settings are usually fine for local use, but check:
+   - Open config/zookeeper.properties in a text editor (e.g., Notepad, nano).
+   - Key settings: dataDir=/tmp/zookeeper # Where Zookeeper stores data clientPort=2181 # Port for Zookeeper client connections
+   - Optional: Change dataDir to a permanent location (e.g., /usr/local/kafka/data/zookeeper) to persist data:
+     - Create the directory: mkdir -p /usr/local/kafka/data/zookeeper
+     - Update the file: dataDir=/usr/local/kafka/data/zookeeper
+4. Save the file.
+
+## 4. Configure Kafka
+
+1. Locate the Kafka config file: config/server.properties
+2. Open it in a text editor.
+3. Review and adjust key settings for local use:
+   - broker.id=0 # Unique ID for the Kafka broker
+   - listeners=PLAINTEXT://localhost:9092 # Where Kafka listens for connections
+   - log.dirs=/tmp/kafka-logs # Where Kafka stores message logs
+   - zookeeper.connect=localhost:2181 # Points to Zookeeper
+4. Optional: For persistence, change log.dirs:
+   - Create a directory: mkdir -p /usr/local/kafka/data/kafka-logs
+   - Update: log.dirs=/usr/local/kafka/data/kafka-logs
+5. Save the file.
+
+## 5. Start Zookeeper
+
+1. Open a terminal window.
+2. Navigate to the Kafka directory:
+   - Windows: cd C:\\kafka
+   - macOS/Linux: cd /usr/local/kafka
+3. Start Zookeeper:
+   - Windows: Run the batch file: bin\\windows\\zookeeper-server-start.bat config\\zookeeper.properties
+   - macOS/Linux: Run the shell script: bin/zookeeper-server-start.sh config/zookeeper.properties
+4. What to expect: Zookeeper starts and listens on port 2181. You’ll see logs in the terminal.
+   - Keep this terminal open; Zookeeper must run before Kafka.
+   - If port 2181 is in use, check for conflicts and adjust clientPort in config/zookeeper.properties.
+
+## 6. Start Kafka
+
+1. Open a new terminal window (leave Zookeeper running).
+2. Navigate to the Kafka directory:
+   - Windows: cd C:\\kafka
+   - macOS/Linux: cd /usr/local/kafka
+3. Start the Kafka server:
+   - Windows: bin\\windows\\kafka-server-start.bat config\\server.properties
+   - macOS/Linux: bin/kafka-server-start.sh config\\server.properties
+4. What to expect: Kafka starts and listens on port 9092. Logs appear in the terminal.
+   - Keep this terminal open.
+   - If port 9092 is in use, check for conflicts and adjust listeners in config/server.properties.
+
+## 7. Verify the Setup
+
+1. Test by creating a topic:
+   - Open a new terminal, navigate to the Kafka directory.
+   - Run:
+     - Windows: bin\\windows\\kafka-topics.bat --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+     - macOS/Linux: bin/kafka-topics.sh --create --topic test-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   - Expected output: "Created topic test-topic"
+2. List topics to confirm:
+   - Windows: bin\\windows\\kafka-topics.bat --list --bootstrap-server localhost:9092
+   - macOS/Linux: bin/kafka-topics.sh --list --bootstrap-server localhost:9092
+   - Should show "test-topic".
+3. Optional: Test producing and consuming a message:
+   - Producer (new terminal):
+     - Windows: bin\\windows\\kafka-console-producer.bat --topic test-topic --bootstrap-server localhost:9092
+     - macOS/Linux: bin/kafka-console-producer.sh --topic test-topic --bootstrap-server localhost:9092
+     - Type a message (e.g., "Hello, Kafka!") and press Enter.
+   - Consumer (new terminal):
+     - Windows: bin\\windows\\kafka-console-consumer.bat --topic test-topic --from-beginning --bootstrap-server localhost:9092
+     - macOS/Linux: bin/kafka-console-consumer.sh --topic test-topic --from-beginning --bootstrap-server localhost:9092
+     - Should display "Hello, Kafka!" in the consumer terminal.
+
+## 8. Notes
+
+- **Paths:** Adjust paths (e.g., dataDir, log.dirs) based on your system and needs.
+- **Permissions:** On Linux/macOS, use sudo if permission is denied (e.g., sudo mkdir /usr/local/kafka/data).
+- **Ports:** Default ports are 2181 (Zookeeper) and 9092 (Kafka). Check for conflicts with netstat or lsof.
+- **Production:** For production, secure Kafka (e.g., enable SSL, authentication) and increase replication-factor.
+- **Shutdown:** Stop Kafka first (Ctrl+C in its terminal), then Zookeeper.
+- **Docker Alternative:** For easier setup, use Docker:
+  - Install Docker.
+  - Run Zookeeper: docker run -d -p 2181:2181 confluentinc/cp-zookeeper:latest
+  - Run Kafka: docker run -d -p 9092:9092 --env KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 --env KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 --env KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 confluentinc/cp-kafka:latest
+
+## 9. Troubleshooting
+
+- **Java not found:** Ensure JAVA_HOME is set and java -version works.
+- **Port conflicts:** Check ports with netstat -tuln (Linux) or netstat -aon (Windows).
+- **Logs:** Check logs in /tmp/kafka-logs or config/log4j.properties for errors.

@@ -1,0 +1,196 @@
+# Software Installation Steps for Task Manager Project
+
+This file provides step-by-step instructions to install all software needed for the Task Manager project, including Java Spring Boot, Next.js, PostgreSQL, Redis, Kafka, Docker, and related tools.
+
+## 1. Java Development Kit (JDK)
+Why: Required to run and develop Spring Boot applications.
+Steps (for JDK 17):
+1. Visit the Oracle JDK download page: https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html
+2. Choose the installer for your OS (e.g., Windows, macOS, Linux).
+   - Windows: Download the .exe file.
+   - macOS: Download the .dmg file.
+   - Linux: Download the .tar.gz file.
+3. Run the installer:
+   - Windows: Double-click the .exe and follow the wizard.
+   - macOS: Open the .dmg and follow the prompts.
+   - Linux: Extract the .tar.gz (e.g., tar -xzf jdk-17_linux-x64_bin.tar.gz) and move to /usr/lib/jvm: 
+     sudo mkdir -p /usr/lib/jvm
+     sudo mv jdk-17* /usr/lib/jvm/
+4. Set environment variables:
+   - Windows: 
+     - Right-click 'This PC' > Properties > Advanced system settings > Environment Variables.
+     - Add to 'Path': C:\Program Files\Java\jdk-17\bin
+     - Add new variable: JAVA_HOME = C:\Program Files\Java\jdk-17
+   - macOS/Linux: 
+     - Open terminal, edit ~/.bash_profile or ~/.bashrc:
+       nano ~/.bashrc
+     - Add:
+       export JAVA_HOME=/usr/lib/jvm/jdk-17
+       export PATH=$JAVA_HOME/bin:$PATH
+     - Save and run: source ~/.bashrc
+5. Verify: Open terminal and run:
+   java -version
+   - Should show JDK 17 (e.g., "java version 17.0.x").
+
+## 2. Maven
+Why: Dependency management and build tool for Spring Boot.
+Steps:
+1. Visit: https://maven.apache.org/download.cgi
+2. Download the binary zip (e.g., apache-maven-3.9.x-bin.zip).
+3. Extract the file:
+   - Windows: Unzip to C:\Program Files\maven
+   - macOS/Linux: Extract to /usr/local/maven
+     tar -xzf apache-maven-3.9.x-bin.tar.gz
+     sudo mv apache-maven-3.9.x /usr/local/maven
+4. Set environment variables:
+   - Windows:
+     - Add to 'Path': C:\Program Files\maven\bin
+     - Add new variable: MAVEN_HOME = C:\Program Files\maven
+   - macOS/Linux:
+     - Edit ~/.bashrc:
+       export MAVEN_HOME=/usr/local/maven
+       export PATH=$MAVEN_HOME/bin:$PATH
+     - Save and run: source ~/.bashrc
+5. Verify: Open terminal and run:
+   mvn -version
+   - Should show Maven version (e.g., "Apache Maven 3.9.x").
+
+## 3. Node.js and npm
+Why: Required for Next.js development and package management.
+Steps:
+1. Visit: https://nodejs.org/
+2. Download the LTS version (e.g., 18.x.x or later):
+   - Windows/macOS: Download the installer (.exe or .dmg).
+   - Linux: Use a package manager or download the binary.
+3. Install:
+   - Windows: Run the .exe and follow the wizard.
+   - macOS: Open the .dmg and follow the prompts.
+   - Linux: 
+     - Download: wget https://nodejs.org/dist/v18.x.x/node-v18.x.x-linux-x64.tar.xz
+     - Extract: tar -xJf node-v18.x.x-linux-x64.tar.xz
+     - Move: sudo mv node-v18.x.x-linux-x64 /usr/local/node
+4. Set environment variables (if needed):
+   - Linux: 
+     - Edit ~/.bashrc:
+       export PATH=/usr/local/node/bin:$PATH
+     - Save and run: source ~/.bashrc
+5. Verify: Open terminal and run:
+   node -v
+   npm -v
+   - Should show Node.js and npm versions (e.g., "v18.x.x" and "9.x.x").
+
+## 4. PostgreSQL
+Why: Relational database for storing tasks.
+Steps:
+1. Visit: https://www.postgresql.org/download/
+2. Choose your OS and download the installer.
+3. Install:
+   - Windows: Run the .exe, follow the wizard, set a password (e.g., "yourpassword").
+   - macOS: Use the installer or Homebrew:
+     brew install postgresql
+   - Linux: Install via package manager:
+     sudo apt update
+     sudo apt install postgresql postgresql-contrib
+4. Start the service:
+   - Windows: Starts automatically or use pgAdmin.
+   - macOS: Run:
+     brew services start postgresql
+   - Linux: Run:
+     sudo service postgresql start
+5. Create a database:
+   - Open terminal or pgAdmin, run:
+     psql -U postgres
+     CREATE DATABASE taskdb;
+     \q
+6. Verify: Connect and check:
+   psql -U postgres -d taskdb
+   - Should connect to "taskdb".
+
+## 5. Redis
+Why: In-memory store for caching task data.
+Steps:
+1. Visit: https://redis.io/download/
+2. Install:
+   - Windows: Download from https://github.com/microsoftarchive/redis/releases (e.g., Redis-x64-3.2.100.msi), run the .msi, and follow the wizard.
+   - macOS: Use Homebrew:
+     brew install redis
+   - Linux: 
+     sudo apt update
+     sudo apt install redis-server
+3. Start the service:
+   - Windows: Starts automatically or run: redis-server
+   - macOS: 
+     brew services start redis
+   - Linux: 
+     sudo service redis-server start
+4. Verify: Open terminal and run:
+   redis-cli ping
+   - Should return "PONG".
+
+## 6. Apache Kafka
+Why: Messaging system for asynchronous task updates.
+Steps:
+1. Visit: https://kafka.apache.org/downloads
+2. Download the latest binary (e.g., kafka_2.13-3.7.x.tgz).
+3. Extract:
+   - Windows: Unzip to C:\kafka
+   - macOS/Linux: 
+     tar -xzf kafka_2.13-3.7.x.tgz
+     mv kafka_2.13-3.7.x /usr/local/kafka
+4. Start Zookeeper (included with Kafka):
+   - Open terminal, navigate to Kafka directory:
+     cd /usr/local/kafka
+   - Run:
+     bin/zookeeper-server-start.sh config/zookeeper.properties
+     - Windows: bin\windows\zookeeper-server-start.bat config\zookeeper.properties
+5. Start Kafka server (in a new terminal):
+   - Run:
+     bin/kafka-server-start.sh config/server.properties
+     - Windows: bin\windows\kafka-server-start.bat config\server.properties
+6. Verify: Create a test topic:
+   bin/kafka-topics.sh --create --topic test --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   - Windows: bin\windows\kafka-topics.bat --create --topic test --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   - Check: Should confirm topic creation.
+
+## 7. Docker
+Why: Containerization for consistent deployment of app, database, Redis, and Kafka.
+Steps:
+1. Visit: https://www.docker.com/get-started/
+2. Download Docker Desktop (Windows/macOS) or Docker for Linux:
+   - Windows/macOS: Download the installer from the site.
+   - Linux: 
+     sudo apt update
+     sudo apt install docker.io
+3. Install:
+   - Windows: Run the .exe, enable WSL2 if prompted, and follow the wizard.
+   - macOS: Open the .dmg and drag Docker to Applications.
+   - Linux: 
+     sudo systemctl start docker
+     sudo systemctl enable docker
+4. Add user to Docker group (Linux):
+   sudo usermod -aG docker $USER
+   - Log out and back in.
+5. Verify: Open terminal and run:
+   docker --version
+   - Should show Docker version (e.g., "Docker version 24.x.x").
+6. For Windows/macOS, launch Docker Desktop and ensure it’s running.
+
+## 8. IDEs (Optional but Recommended)
+Why: Simplifies coding, debugging, and project management.
+- IntelliJ IDEA (for Spring Boot):
+  1. Visit: https://www.jetbrains.com/idea/download/
+  2. Download Community Edition.
+  3. Install: Follow the wizard (Windows/macOS) or extract and run (Linux).
+  4. Verify: Open and create a new project.
+- Visual Studio Code (for Next.js):
+  1. Visit: https://code.visualstudio.com/
+  2. Download for your OS.
+  3. Install: Follow the wizard or package manager.
+  4. Install extensions: TypeScript, ESLint, Prettier.
+  5. Verify: Open and create a new file.
+
+## Notes
+- Ensure your system meets requirements (e.g., 8GB RAM, 10GB free disk space).
+- Adjust ports if conflicts occur (e.g., 5432, 6379, 9092).
+- Use strong passwords for PostgreSQL and secure Kafka in production.
+- Run commands with sudo if permission is denied (Linux).
